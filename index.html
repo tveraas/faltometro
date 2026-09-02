@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#23324D">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<title>Faltômetro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3F5F0;
+    --paper2:#EAEDE6;
+    --card:#FFFFFF;
+    --ink:#23324D;
+    --ink-soft:#4B5768;
+    --muted:#7C8778;
+    --line:#D7DED2;
+    --accent:#3B6E62;
+    --accent-dark:#2C544B;
+    --accent-bg:#E3EEE9;
+    --warn:#C9822B;
+    --warn-bg:#FBEEDC;
+    --danger:#B2453D;
+    --danger-bg:#F7E4E2;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--line) 27px, var(--line) 28px);
+    font-family:'Work Sans', system-ui, sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:calc(110px + env(safe-area-inset-bottom));
+  }
+  h1,h2,h3{font-family:'Zilla Slab', Georgia, serif; margin:0; color:var(--ink);}
+  .wrap{max-width:480px;margin:0 auto;padding:0 18px;}
+  header{padding:40px 0 18px;}
+  header.header-top{display:flex; align-items:flex-start; justify-content:space-between;}
+  header h1{font-size:28px; font-weight:700;}
+  .gear-btn{
+    background:var(--card); border:1px solid var(--line); border-radius:11px; width:40px; height:40px;
+    font-size:17px; color:var(--ink-soft); cursor:pointer; flex:0 0 auto; margin-top:6px;
+  }
+  .semester-banner{
+    background:var(--warn-bg); border:1px solid var(--warn-bg); border-radius:12px; padding:12px 14px;
+    font-size:13px; color:var(--warn); margin-bottom:14px;
+  }
+  main{display:flex;flex-direction:column;gap:14px;padding-bottom:20px;}
+
+  .empty{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:32px 22px; text-align:center; margin-top:8px;
+  }
+  .empty h2{font-size:19px; margin-bottom:8px;}
+  .empty p{font-size:14px; color:var(--ink-soft); line-height:1.5; margin:0 0 18px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 18px 16px; cursor:pointer;
+  }
+  .card-top{display:flex;align-items:center;justify-content:space-between; gap:10px;}
+  .card-top h2{font-size:18px; font-weight:600; line-height:1.25;}
+  .days-label{font-size:12px; color:var(--muted); margin:4px 0 0;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .dot.ok{background:var(--accent);}
+  .dot.warn{background:var(--warn);}
+  .dot.danger{background:var(--danger);}
+
+  .metric{display:flex; align-items:baseline; gap:8px; margin:10px 0 2px;}
+  .metric .num{font-family:'Zilla Slab', serif; font-size:38px; font-weight:700; line-height:1;}
+  .metric .num.ok{color:var(--accent-dark);}
+  .metric .num.warn{color:var(--warn);}
+  .metric .num.danger{color:var(--danger);}
+  .metric .label{font-size:13px; color:var(--ink-soft);}
+
+  .track{height:6px; border-radius:4px; background:var(--paper2); overflow:hidden; margin:10px 0 8px;}
+  .fill{height:100%; border-radius:4px;}
+  .fill.ok{background:var(--accent);}
+  .fill.warn{background:var(--warn);}
+  .fill.danger{background:var(--danger);}
+  .caption{font-size:12.5px; color:var(--muted); margin:0 0 14px;}
+
+  .btn{
+    flex:1; border:none; border-radius:11px; padding:11px 8px; font-family:'Work Sans',sans-serif;
+    font-size:14px; font-weight:600; cursor:pointer; text-align:center;
+  }
+  .btn:active{transform:scale(0.97);}
+
+  .fab{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(22px + env(safe-area-inset-bottom)); z-index:20;
+    background:var(--ink); color:var(--paper); border:none; border-radius:26px;
+    padding:14px 26px; font-size:15px; font-weight:600; font-family:'Work Sans',sans-serif;
+    box-shadow:0 6px 18px rgba(35,50,77,0.28); cursor:pointer; max-width:440px; width:calc(100% - 36px);
+  }
+  .fab:active{transform:translateX(-50%) scale(0.98);}
+  .fab.hidden{display:none;}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(35,50,77,0.4); z-index:30;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .overlay.hidden{display:none;}
+  .sheet{
+    background:var(--paper); width:100%; max-width:480px; border-radius:22px 22px 0 0;
+    padding:20px 20px calc(40px + env(safe-area-inset-bottom)); max-height:85vh; overflow-y:auto;
+  }
+  .sheet-handle{
+    width:100%; height:26px; display:flex; align-items:center; justify-content:center;
+    margin-bottom:6px; touch-action:none; cursor:grab;
+  }
+  .sheet-handle::after{content:''; width:38px; height:4px; background:var(--line); border-radius:3px;}
+  .sheet h2{font-size:20px; margin-bottom:14px;}
+
+  label{display:block; font-size:13px; color:var(--ink-soft); margin:14px 0 6px;}
+  input[type=text], input[type=number], input[type=date], select{
+    width:100%; border:1px solid var(--line); background:var(--card); border-radius:10px;
+    padding:11px 12px; font-size:15px; font-family:'Work Sans',sans-serif; color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .row{display:flex; gap:10px;}
+  .row > div{flex:1;}
+
+  .day-schedule{display:flex; flex-direction:column; gap:4px;}
+  .day-schedule-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:8px 2px; border-bottom:1px solid var(--line);
+  }
+  .day-schedule-row:last-child{border-bottom:none;}
+  .day-check{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink);}
+  .day-check input[type=checkbox]{width:18px; height:18px; accent-color:var(--accent);}
+  .day-schedule-row input[type=time]{width:110px; padding:7px 8px; font-size:13.5px;}
+  .history-toggle{width:100%; margin:18px 0 12px;}
+
+  .sheet-actions{display:flex; gap:10px; margin-top:22px;}
+  .sheet-actions .btn{padding:13px 8px;}
+  .btn-primary{background:var(--ink); color:var(--paper);}
+  .btn-secondary{background:var(--paper2); color:var(--ink-soft);}
+  .btn-text-danger{background:none; color:var(--danger); font-weight:600; font-size:13.5px; border:none; padding:8px; cursor:pointer; width:100%; text-align:center; margin-top:6px;}
+
+  .reorder-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px;
+  }
+  .reorder-item .name{font-size:14.5px; font-weight:600;}
+  .reorder-arrows{display:flex; gap:6px;}
+  .reorder-arrows button{
+    width:36px; height:36px; border-radius:9px; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); font-size:13px; cursor:pointer;
+  }
+  .reorder-arrows button:disabled{opacity:0.35; cursor:default;}
+  .subjects-toolbar{display:flex; justify-content:flex-end; margin-bottom:4px;}
+  .subjects-toolbar button{
+    background:none; border:none; color:var(--accent-dark); font-size:13px; font-weight:600;
+    cursor:pointer; padding:4px; font-family:'Work Sans',sans-serif;
+  }
+
+  .hist-title{font-size:13px; color:var(--ink-soft); margin:22px 0 8px;}
+  .hist-item{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 0;
+    border-bottom:1px solid var(--line); font-size:14px;
+  }
+  .hist-item:last-child{border-bottom:none;}
+  .hist-left{display:flex; align-items:center; gap:9px;}
+  .tag{font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px;}
+  .tag.falta{background:var(--danger-bg); color:var(--danger);}
+  .tag.presenca{background:var(--accent-bg); color:var(--accent-dark);}
+  .hist-del{background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; padding:4px 6px;}
+  .hist-empty{font-size:13.5px; color:var(--muted); padding:8px 0;}
+
+  .tabs{display:flex; gap:8px; margin-bottom:14px;}
+  .tab-btn{
+    flex:1; padding:10px; border-radius:11px; border:1px solid var(--line); background:var(--card);
+    font-size:14px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:'Work Sans',sans-serif;
+  }
+  .tab-btn.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+
+  .day-nav{
+    display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:12px 10px; margin-bottom:14px;
+  }
+  .day-nav .arrow{
+    background:none; border:none; font-size:22px; color:var(--ink-soft); cursor:pointer; padding:4px 10px;
+    line-height:1; font-family:'Work Sans',sans-serif;
+  }
+  .day-nav .arrow:disabled{color:var(--line); cursor:default;}
+  .day-nav .day-mid{flex:1; text-align:center;}
+  .day-title{font-family:'Zilla Slab',serif; font-size:16.5px; font-weight:600;}
+  .day-nav input[type=date]{
+    border:none; background:none; font-size:12px; color:var(--muted); text-align:center;
+    padding:2px 0 0; width:auto; margin:0 auto;
+  }
+
+  .day-empty{font-size:13.5px; color:var(--muted); text-align:center; padding:18px 0;}
+
+  .day-subject-row.unset{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card);
+    border:1px solid var(--line); border-radius:14px; padding:12px 12px 12px 16px; margin-bottom:8px;
+  }
+  .day-subject-row .name{font-size:14.5px; font-weight:600; line-height:1.3;}
+  .row-time{font-size:12px; color:var(--muted); font-weight:600; margin-right:8px;}
+  .quick-actions{display:flex; gap:8px; flex:0 0 auto;}
+  .quick-actions button{
+    border:1px solid var(--line); background:var(--paper); border-radius:10px; padding:9px 14px;
+    font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:'Work Sans',sans-serif;
+  }
+  .quick-actions button[data-day-action="presenca"]:active{background:var(--accent-bg); color:var(--accent-dark);}
+  .quick-actions button[data-day-action="falta"]:active{background:var(--danger-bg); color:var(--danger);}
+
+  button.day-subject-row.set{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
+    border:1px solid transparent; border-radius:14px; padding:13px 16px; margin-bottom:8px;
+    font-family:'Work Sans',sans-serif; cursor:pointer; text-align:left;
+  }
+  button.day-subject-row.set.presenca{background:var(--accent-bg); color:var(--accent-dark);}
+  button.day-subject-row.set.falta{background:var(--danger-bg); color:var(--danger);}
+  .day-subject-row.set .name{color:inherit;}
+  .day-subject-row.set .row-note{
+    font-size:12px; font-style:italic; opacity:0.8; margin-left:8px; color:inherit; flex:1;
+  }
+  .status-label{font-size:12.5px; font-weight:700; flex:0 0 auto;}
+
+  .seg{display:flex; gap:6px;}
+  .seg button{
+    border:1px solid var(--line); background:var(--paper); border-radius:9px; padding:8px 11px;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:'Work Sans',sans-serif;
+  }
+  .seg button.sel-falta{background:var(--danger-bg); color:var(--danger); border-color:var(--danger-bg);}
+  .seg button.sel-presenca{background:var(--accent-bg); color:var(--accent-dark); border-color:var(--accent-bg);}
+
+  .log-title{font-size:13px; color:var(--ink-soft); margin:22px 0 10px;}
+  .log-item{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px;
+    margin-bottom:8px; cursor:pointer;
+  }
+  .log-item .log-date{font-weight:600; font-size:14px; margin-bottom:5px;}
+  .log-row{font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:7px; margin-bottom:4px;}
+  .log-row:last-child{margin-bottom:0;}
+  .log-note{color:var(--muted); font-style:italic;}
+
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:11px 20px; border-radius:24px;
+    font-size:13.5px; z-index:40; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="header-top">
+    <div>
+      <h1>Faltômetro</h1>
+    </div>
+    <button class="gear-btn" id="settings-btn" aria-label="Configurações">⚙</button>
+  </header>
+  <div class="tabs">
+    <button class="tab-btn" data-tab="subjects">Matérias</button>
+    <button class="tab-btn" data-tab="day">Por dia</button>
+  </div>
+  <main id="list"></main>
+</div>
+
+<button class="fab" id="fab">Nova matéria</button>
+
+<div class="overlay hidden" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'faltometro-data';
+let state = { subjects: [], records: [], settings: {} };
+let activeTab = 'subjects';
+let currentDay = null;
+let historyOpen = false;
+
+function weekdayOf(iso){
+  return new Date(iso + 'T00:00:00').getDay();
+}
+
+function isWeekend(iso){
+  const wd = weekdayOf(iso);
+  return wd === 0 || wd === 6;
+}
+
+function shiftISODate(iso, delta){
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function nearestWeekday(iso){
+  let d = iso;
+  while(isWeekend(d)) d = shiftISODate(d, -1);
+  return d;
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function todayISO(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function formatDateBR(iso){
+  const [y,m,d] = iso.split('-');
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${parseInt(d)} de ${meses[parseInt(m)-1]}`;
+}
+
+function formatDateLongBR(iso){
+  const d = new Date(iso + 'T00:00:00');
+  const label = d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+async function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      state = JSON.parse(raw);
+      if(!state.subjects) state.subjects = [];
+      if(!state.records) state.records = [];
+      if(!state.settings) state.settings = {};
+    }
+  }catch(e){
+    state = { subjects: [], records: [] };
+  }
+}
+
+async function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    showToast('Não consegui salvar. Tente de novo.');
+  }
+}
+
+function computeStats(subject){
+  const faltasCount = state.records.filter(r => r.subjectId === subject.id && r.type === 'falta').length;
+  const maxFaltas = subject.maxFaltas;
+  const restantes = maxFaltas - faltasCount;
+  const pct = maxFaltas > 0 ? Math.min(100, (faltasCount/maxFaltas)*100) : 0;
+  let status = 'ok';
+  if(restantes <= 0) status = 'danger';
+  else if(restantes <= Math.max(1, Math.ceil(maxFaltas*0.15))) status = 'warn';
+  return { faltasCount, maxFaltas, restantes, pct, status };
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function upsertRecord(subjectId, date, type, note){
+  state.records = state.records.filter(r => !(r.subjectId === subjectId && r.date === date));
+  state.records.push({ id: uid(), subjectId, date, type, note: note || '' });
+}
+
+function removeRecordForDate(subjectId, date){
+  state.records = state.records.filter(r => !(r.subjectId === subjectId && r.date === date));
+}
+
+function render(){
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-tab') === activeTab);
+  });
+  document.getElementById('fab').classList.toggle('hidden', activeTab !== 'subjects');
+  if(activeTab === 'day') renderDayView();
+  else renderSubjectsView();
+}
+
+function renderSubjectsView(){
+  const list = document.getElementById('list');
+  if(state.subjects.length === 0){
+    list.innerHTML = `
+      <div class="empty">
+        <h2>Nenhuma matéria ainda</h2>
+        <p>Cadastre suas matérias com o total de aulas do semestre e eu calculo quantas faltas você ainda pode ter.</p>
+      </div>`;
+    return;
+  }
+  const settings = state.settings || {};
+  const banner = (settings.end && todayISO() > settings.end)
+    ? `<div class="semester-banner">O semestre que você configurou terminou em ${formatDateBR(settings.end)}. Você pode ajustar as datas nas configurações.</div>`
+    : '';
+  const toolbar = state.subjects.length > 1
+    ? `<div class="subjects-toolbar"><button id="open-reorder">Reordenar matérias</button></div>`
+    : '';
+  list.innerHTML = banner + toolbar + state.subjects.map(s => {
+    const st = computeStats(s);
+    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const daysLabel = (s.days && s.days.length)
+      ? s.days.slice().sort((a,b)=>a-b).map(i => (s.times && s.times[i]) ? `${dias[i]} ${s.times[i]}` : dias[i]).join(' · ')
+      : '';
+    const restantesLabel = st.restantes >= 0
+      ? `falta${st.restantes===1?'':'s'} restante${st.restantes===1?'':'s'}`
+      : `acima do limite`;
+    return `
+    <article class="card" data-id="${s.id}">
+      <div class="card-top">
+        <h2>${escapeHtml(s.name)}</h2>
+        <span class="dot ${st.status}"></span>
+      </div>
+      ${daysLabel ? `<p class="days-label">${daysLabel}</p>` : ''}
+      <div class="metric">
+        <span class="num ${st.status}">${st.restantes}</span>
+        <span class="label">${restantesLabel}</span>
+      </div>
+      <div class="track"><div class="fill ${st.status}" style="width:${st.pct}%"></div></div>
+      <p class="caption">${st.faltasCount} de ${st.maxFaltas} faltas usadas</p>
+    </article>`;
+  }).join('');
+}
+
+function renderDayView(){
+  const list = document.getElementById('list');
+  const settings = state.settings || {};
+  const minDate = settings.start || null;
+  const maxDate = settings.end && settings.end < todayISO() ? settings.end : todayISO();
+
+  if(!currentDay) currentDay = nearestWeekday(todayISO());
+  if(minDate && currentDay < minDate) currentDay = nearestWeekday(minDate);
+  if(currentDay > maxDate) currentDay = nearestWeekday(maxDate);
+
+  if(state.subjects.length === 0){
+    list.innerHTML = `
+      <div class="empty">
+        <h2>Nenhuma matéria ainda</h2>
+        <p>Cadastre uma matéria na aba "Matérias" pra poder marcar presença ou falta por dia.</p>
+      </div>`;
+    return;
+  }
+
+  let nextCheck = shiftISODate(currentDay, 1);
+  while(isWeekend(nextCheck)) nextCheck = shiftISODate(nextCheck, 1);
+  const nextDisabled = nextCheck > maxDate;
+
+  let prevCheck = shiftISODate(currentDay, -1);
+  while(isWeekend(prevCheck)) prevCheck = shiftISODate(prevCheck, -1);
+  const prevDisabled = minDate ? prevCheck < minDate : false;
+
+  const nav = `
+    <div class="day-nav">
+      <button class="arrow" data-nav="-1" aria-label="Dia anterior" ${prevDisabled ? 'disabled' : ''}>‹</button>
+      <div class="day-mid">
+        <div class="day-title">${formatDateLongBR(currentDay)}</div>
+        <input type="date" id="day-pick" value="${currentDay}" min="${minDate || ''}" max="${maxDate}">
+      </div>
+      <button class="arrow" data-nav="1" aria-label="Dia seguinte" ${nextDisabled ? 'disabled' : ''}>›</button>
+    </div>`;
+
+  const weekday = weekdayOf(currentDay);
+  const visibleSubjects = state.subjects
+    .filter(s => !s.days || s.days.length === 0 || s.days.includes(weekday))
+    .slice()
+    .sort((a, b) => {
+      const ta = (a.times && a.times[weekday] != null) ? timeToMinutes(a.times[weekday]) : Infinity;
+      const tb = (b.times && b.times[weekday] != null) ? timeToMinutes(b.times[weekday]) : Infinity;
+      return ta - tb;
+    });
+
+  const rows = visibleSubjects.length ? visibleSubjects.map(s => {
+    const rec = state.records.find(r => r.subjectId === s.id && r.date === currentDay);
+    const time = (s.times && s.times[weekday]) || '';
+    if(!rec){
+      return `
+      <div class="day-subject-row unset">
+        <div>
+          ${time ? `<span class="row-time">${time}</span>` : ''}
+          <span class="name">${escapeHtml(s.name)}</span>
+        </div>
+        <div class="quick-actions">
+          <button data-day-action="presenca" data-id="${s.id}">Presença</button>
+          <button data-day-action="falta" data-id="${s.id}">Falta</button>
+        </div>
+      </div>`;
+    }
+    return `
+    <button type="button" class="day-subject-row set ${rec.type}" data-open-day="${s.id}">
+      <div>
+        ${time ? `<span class="row-time">${time}</span>` : ''}
+        <span class="name">${escapeHtml(s.name)}</span>
+        ${rec.note ? `<span class="row-note">${escapeHtml(rec.note)}</span>` : ''}
+      </div>
+      <span class="status-label">${rec.type === 'falta' ? 'Falta' : 'Presença'}</span>
+    </button>`;
+  }).join('') : `<p class="day-empty">Nenhuma matéria com aula nesse dia.</p>`;
+
+  let logSection = `<button class="btn btn-secondary history-toggle" id="toggle-history">${historyOpen ? 'Ocultar histórico' : 'Ver histórico de todos os dias'}</button>`;
+
+  if(historyOpen){
+    const byDate = {};
+    state.records.forEach(r => {
+      if(!byDate[r.date]) byDate[r.date] = [];
+      byDate[r.date].push(r);
+    });
+    const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+    const logHtml = dates.length ? dates.map(date => {
+      const rowsHtml = byDate[date].map(r => {
+        const s = state.subjects.find(x => x.id === r.subjectId);
+        if(!s) return '';
+        return `<div class="log-row"><span class="tag ${r.type}">${r.type==='falta'?'Falta':'Presença'}</span> ${escapeHtml(s.name)}${r.note ? ` <span class="log-note">— ${escapeHtml(r.note)}</span>` : ''}</div>`;
+      }).join('');
+      return `
+        <div class="log-item" data-jump="${date}">
+          <div class="log-date">${formatDateBR(date)}</div>
+          ${rowsHtml}
+        </div>`;
+    }).join('') : `<p class="hist-empty">Nenhum registro ainda.</p>`;
+    logSection += `<div id="history-list">${logHtml}</div>`;
+  }
+
+  list.innerHTML = `
+    ${nav}
+    ${rows}
+    ${logSection}
+  `;
+}
+
+function openDaySubjectSheet(subjectId){
+  const s = state.subjects.find(x => x.id === subjectId);
+  if(!s) return;
+  const rec = state.records.find(r => r.subjectId === subjectId && r.date === currentDay);
+
+  openOverlay(`
+    <h2>${escapeHtml(s.name)}</h2>
+    <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px;">${formatDateLongBR(currentDay)}</p>
+    <div class="seg" id="ds-status" style="margin-bottom:16px;">
+      <button type="button" data-set="presenca" class="${rec && rec.type==='presenca' ? 'sel-presenca' : ''}">Presença</button>
+      <button type="button" data-set="falta" class="${rec && rec.type==='falta' ? 'sel-falta' : ''}">Falta</button>
+    </div>
+    <label for="ds-note">Observação (opcional)</label>
+    <input type="text" id="ds-note" value="${rec && rec.note ? escapeHtml(rec.note) : ''}" placeholder="não teve aula, paralisação...">
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" id="ds-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="ds-save">Salvar</button>
+    </div>
+    ${rec ? `<button class="btn-text-danger" id="ds-remove">Remover registro desse dia</button>` : ''}
+  `);
+
+  document.getElementById('ds-status').querySelectorAll('[data-set]').forEach(btn => {
+    btn.onclick = () => {
+      document.getElementById('ds-status').querySelectorAll('[data-set]').forEach(b => b.classList.remove('sel-presenca','sel-falta'));
+      btn.classList.add(btn.getAttribute('data-set') === 'falta' ? 'sel-falta' : 'sel-presenca');
+    };
+  });
+
+  document.getElementById('ds-cancel').onclick = closeOverlay;
+
+  document.getElementById('ds-save').onclick = async () => {
+    const chosen = document.getElementById('ds-status').querySelector('.sel-presenca, .sel-falta');
+    if(!chosen){ showToast('Escolha presença ou falta.'); return; }
+    const type = chosen.classList.contains('sel-falta') ? 'falta' : 'presenca';
+    const note = document.getElementById('ds-note').value.trim();
+    upsertRecord(subjectId, currentDay, type, note);
+    await saveData();
+    render();
+    closeOverlay();
+  };
+
+  const removeBtn = document.getElementById('ds-remove');
+  if(removeBtn){
+    removeBtn.onclick = async () => {
+      removeRecordForDate(subjectId, currentDay);
+      await saveData();
+      render();
+      closeOverlay();
+    };
+  }
+}
+
+function openSettingsSheet(){
+  const settings = state.settings || {};
+  openOverlay(`
+    <h2>Configurações</h2>
+    <label for="st-start">Início do semestre</label>
+    <input type="date" id="st-start" value="${settings.start || ''}">
+    <label for="st-end">Fim do semestre</label>
+    <input type="date" id="st-end" value="${settings.end || ''}">
+    <p style="font-size:12.5px; color:var(--muted); margin:8px 0 0;">Isso limita até onde dá pra navegar na aba "Por dia".</p>
+    <button class="btn btn-primary" id="st-save" style="width:100%; margin-top:14px;">Salvar</button>
+
+    <label style="margin-top:24px;">Backup dos dados</label>
+    <p style="font-size:12.5px; color:var(--muted); margin:0 0 10px;">Baixe um arquivo com tudo que você cadastrou, pra não perder nada se trocar de site.</p>
+    <button class="btn btn-secondary" id="st-export" style="width:100%;">Baixar backup</button>
+
+    <label for="st-import-file" style="margin-top:14px;">Importar backup</label>
+    <input type="file" id="st-import-file" accept="application/json">
+  `);
+
+  document.getElementById('st-save').onclick = async () => {
+    const start = document.getElementById('st-start').value;
+    const end = document.getElementById('st-end').value;
+    if(start && end && start > end){ showToast('A data de início deve vir antes da de fim.'); return; }
+    state.settings = { start: start || '', end: end || '' };
+    await saveData();
+    if(currentDay && start && currentDay < start) currentDay = start;
+    if(currentDay && end && currentDay > end) currentDay = end;
+    render();
+    closeOverlay();
+  };
+
+  document.getElementById('st-export').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `faltometro-backup-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  document.getElementById('st-import-file').onchange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try{
+        const imported = JSON.parse(reader.result);
+        if(!imported.subjects || !imported.records){ showToast('Arquivo inválido.'); return; }
+        if(!confirm('Isso substitui todos os dados atuais pelos do backup. Continuar?')) return;
+        state = imported;
+        await saveData();
+        render();
+        closeOverlay();
+      }catch(err){
+        showToast('Não consegui ler esse arquivo.');
+      }
+    };
+    reader.readAsText(file);
+  };
+}
+
+function openReorderSheet(){
+  openOverlay(`
+    <h2>Reordenar matérias</h2>
+    <div id="reorder-list"></div>
+    <button class="btn btn-primary" id="reorder-done" style="width:100%; margin-top:16px;">Concluído</button>
+  `);
+  renderReorderList();
+  document.getElementById('reorder-done').onclick = closeOverlay;
+}
+
+function renderReorderList(){
+  const container = document.getElementById('reorder-list');
+  container.innerHTML = state.subjects.map((s, i) => `
+    <div class="reorder-item">
+      <span class="name">${escapeHtml(s.name)}</span>
+      <div class="reorder-arrows">
+        <button data-move="up" data-index="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Mover pra cima">▲</button>
+        <button data-move="down" data-index="${i}" ${i === state.subjects.length - 1 ? 'disabled' : ''} aria-label="Mover pra baixo">▼</button>
+      </div>
+    </div>`).join('');
+  container.querySelectorAll('[data-move]').forEach(btn => {
+    btn.onclick = async () => {
+      const i = parseInt(btn.getAttribute('data-index'));
+      const dir = btn.getAttribute('data-move') === 'up' ? -1 : 1;
+      const j = i + dir;
+      if(j < 0 || j >= state.subjects.length) return;
+      [state.subjects[i], state.subjects[j]] = [state.subjects[j], state.subjects[i]];
+      await saveData();
+      renderReorderList();
+      render();
+    };
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function openOverlay(html){
+  document.getElementById('sheet').innerHTML = `<div class="sheet-handle"></div>${html}`;
+  document.getElementById('overlay').classList.remove('hidden');
+  attachSheetDrag();
+}
+function closeOverlay(){
+  document.getElementById('overlay').classList.add('hidden');
+  const sheet = document.getElementById('sheet');
+  sheet.style.transform = '';
+  sheet.style.transition = '';
+}
+
+let dragStartY = null;
+let dragDeltaY = 0;
+function attachSheetDrag(){
+  const handle = document.querySelector('.sheet-handle');
+  const header = document.querySelector('#sheet h2');
+  const sheet = document.getElementById('sheet');
+  if(!sheet) return;
+  const dragTargets = [handle, header].filter(Boolean);
+
+  dragTargets.forEach(target => {
+    target.addEventListener('touchstart', (e) => {
+      dragStartY = e.touches[0].clientY;
+      dragDeltaY = 0;
+      sheet.style.transition = 'none';
+    }, { passive:true });
+    target.addEventListener('touchmove', (e) => {
+      if(dragStartY === null) return;
+      dragDeltaY = e.touches[0].clientY - dragStartY;
+      if(dragDeltaY > 0) sheet.style.transform = `translateY(${dragDeltaY}px)`;
+    }, { passive:true });
+    target.addEventListener('touchend', () => {
+      sheet.style.transition = 'transform .2s';
+      if(dragDeltaY > 80){
+        closeOverlay();
+      } else {
+        sheet.style.transform = '';
+      }
+      dragStartY = null;
+      dragDeltaY = 0;
+    });
+  });
+}
+
+const WEEKDAY_NAMES = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function scheduleRowsHtml(prefix, subjectDays, subjectTimes){
+  return WEEKDAY_NAMES.map((d,i) => {
+    const checked = subjectDays.includes(i);
+    const time = (subjectTimes && subjectTimes[i]) || '';
+    return `
+    <div class="day-schedule-row">
+      <label class="day-check">
+        <input type="checkbox" id="${prefix}-day-${i}" data-day="${i}" ${checked ? 'checked' : ''}>
+        ${d}
+      </label>
+      <input type="time" id="${prefix}-time-${i}" data-time="${i}" value="${time}" style="${checked ? '' : 'visibility:hidden;'}">
+    </div>`;
+  }).join('');
+}
+
+function attachScheduleToggles(prefix){
+  WEEKDAY_NAMES.forEach((d,i) => {
+    const cb = document.getElementById(`${prefix}-day-${i}`);
+    const time = document.getElementById(`${prefix}-time-${i}`);
+    if(!cb || !time) return;
+    cb.addEventListener('change', () => {
+      time.style.visibility = cb.checked ? 'visible' : 'hidden';
+    });
+  });
+}
+
+function readSchedule(prefix){
+  const days = [];
+  const times = {};
+  WEEKDAY_NAMES.forEach((d,i) => {
+    const cb = document.getElementById(`${prefix}-day-${i}`);
+    const time = document.getElementById(`${prefix}-time-${i}`);
+    if(cb && cb.checked){
+      days.push(i);
+      if(time && time.value) times[i] = time.value;
+    }
+  });
+  return { days, times };
+}
+
+function timeToMinutes(t){
+  if(!t) return null;
+  const [h,m] = t.split(':').map(Number);
+  return h*60 + m;
+}
+
+function openAddSubjectSheet(){
+  openOverlay(`
+    <h2>Nova matéria</h2>
+    <label for="f-name">Nome da matéria</label>
+    <input type="text" id="f-name" placeholder="Automatos">
+    <label for="f-max">Quantas faltas você pode ter nessa matéria?</label>
+    <input type="number" id="f-max" min="1" placeholder="11">
+    <label>Em quais dias e horários você tem essa matéria?</label>
+    <div class="day-schedule">${scheduleRowsHtml('f', [], {})}</div>
+    <div class="sheet-actions">
+      <button class="btn btn-secondary" id="cancel-add">Cancelar</button>
+      <button class="btn btn-primary" id="save-add">Salvar matéria</button>
+    </div>
+  `);
+  attachScheduleToggles('f');
+  document.getElementById('cancel-add').onclick = closeOverlay;
+  document.getElementById('save-add').onclick = async () => {
+    const name = document.getElementById('f-name').value.trim();
+    const maxFaltas = parseInt(document.getElementById('f-max').value);
+    const { days, times } = readSchedule('f');
+    if(!name){ showToast('Digite o nome da matéria.'); return; }
+    if(!maxFaltas || maxFaltas <= 0){ showToast('Informe o limite de faltas.'); return; }
+    state.subjects.push({ id: uid(), name, maxFaltas, days, times });
+    await saveData();
+    render();
+    closeOverlay();
+  };
+}
+
+function openDetailSheet(subjectId){
+  const s = state.subjects.find(x => x.id === subjectId);
+  if(!s) return;
+  const sDays = s.days || [];
+  const sTimes = s.times || {};
+  const recs = state.records.filter(r => r.subjectId === subjectId).sort((a,b)=> b.date.localeCompare(a.date));
+  const histHtml = recs.length ? recs.map(r => `
+      <div class="hist-item">
+        <div class="hist-left">
+          <span class="tag ${r.type}">${r.type === 'falta' ? 'Falta' : 'Presença'}</span>
+          <span>${formatDateBR(r.date)}${r.note ? ' — ' + escapeHtml(r.note) : ''}</span>
+        </div>
+        <button class="hist-del" data-del="${r.id}">Remover</button>
+      </div>`).join('') : `<p class="hist-empty">Nenhum registro ainda.</p>`;
+
+  openOverlay(`
+    <h2>Editar matéria</h2>
+    <label for="e-name">Nome da matéria</label>
+    <input type="text" id="e-name" value="${escapeHtml(s.name)}">
+    <label for="e-max">Limite de faltas</label>
+    <input type="number" id="e-max" min="1" value="${s.maxFaltas}">
+    <label>Em quais dias e horários você tem essa matéria?</label>
+    <div class="day-schedule">${scheduleRowsHtml('e', sDays, sTimes)}</div>
+    <button class="btn btn-primary" id="save-edit" style="width:100%; margin-top:12px;">Salvar alterações</button>
+
+    <label for="add-date" style="margin-top:22px;">Registrar em outra data</label>
+    <div class="row">
+      <div><input type="date" id="add-date" value="${todayISO()}" max="${todayISO()}"></div>
+      <div>
+        <select id="add-type">
+          <option value="falta">Falta</option>
+          <option value="presenca">Presença</option>
+        </select>
+      </div>
+    </div>
+    <label for="add-note" style="margin-top:10px;">Observação (opcional)</label>
+    <input type="text" id="add-note" placeholder="não teve aula, paralisação...">
+    <button class="btn btn-secondary" id="add-record" style="width:100%; margin-top:10px;">Adicionar registro</button>
+
+    <p class="hist-title">Histórico</p>
+    <div id="hist-list">${histHtml}</div>
+
+    <button class="btn-text-danger" id="delete-subject">Excluir matéria</button>
+  `);
+
+  attachScheduleToggles('e');
+
+  document.getElementById('save-edit').onclick = async () => {
+    const name = document.getElementById('e-name').value.trim();
+    const maxFaltas = parseInt(document.getElementById('e-max').value);
+    const { days, times } = readSchedule('e');
+    if(!name){ showToast('Digite o nome da matéria.'); return; }
+    if(!maxFaltas || maxFaltas <= 0){ showToast('Informe um limite válido.'); return; }
+    s.name = name;
+    s.maxFaltas = maxFaltas;
+    s.days = days;
+    s.times = times;
+    await saveData();
+    render();
+    closeOverlay();
+  };
+
+  document.getElementById('add-record').onclick = async () => {
+    const date = document.getElementById('add-date').value;
+    const type = document.getElementById('add-type').value;
+    const note = document.getElementById('add-note').value.trim();
+    if(!date){ showToast('Escolha uma data.'); return; }
+    upsertRecord(subjectId, date, type, note);
+    await saveData();
+    render();
+    openDetailSheet(subjectId);
+  };
+
+  document.getElementById('hist-list').querySelectorAll('[data-del]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.getAttribute('data-del');
+      state.records = state.records.filter(r => r.id !== id);
+      await saveData();
+      render();
+      openDetailSheet(subjectId);
+    };
+  });
+
+  document.getElementById('delete-subject').onclick = async () => {
+    if(!confirm(`Excluir "${s.name}" e todo o histórico dela?`)) return;
+    state.subjects = state.subjects.filter(x => x.id !== subjectId);
+    state.records = state.records.filter(r => r.subjectId !== subjectId);
+    await saveData();
+    render();
+    closeOverlay();
+  };
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTab = btn.getAttribute('data-tab');
+    render();
+  });
+});
+
+document.getElementById('list').addEventListener('click', async (e) => {
+  const historyToggle = e.target.closest('#toggle-history');
+  if(historyToggle){
+    historyOpen = !historyOpen;
+    render();
+    return;
+  }
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){
+    const delta = parseInt(navBtn.getAttribute('data-nav'));
+    const settings = state.settings || {};
+    const minDate = settings.start || null;
+    const maxDate = settings.end && settings.end < todayISO() ? settings.end : todayISO();
+    let iso = currentDay;
+    do {
+      iso = shiftISODate(iso, delta);
+    } while(isWeekend(iso));
+    if(delta > 0 && iso > maxDate) return;
+    if(delta < 0 && minDate && iso < minDate) return;
+    currentDay = iso;
+    render();
+    return;
+  }
+  const dayBox = e.target.closest('[data-open-day]');
+  if(dayBox){
+    openDaySubjectSheet(dayBox.getAttribute('data-open-day'));
+    return;
+  }
+  const dayActionBtn = e.target.closest('[data-day-action]');
+  if(dayActionBtn){
+    const id = dayActionBtn.getAttribute('data-id');
+    const type = dayActionBtn.getAttribute('data-day-action');
+    const existing = state.records.find(r => r.subjectId === id && r.date === currentDay);
+    const s = state.subjects.find(x => x.id === id);
+    if(existing && existing.type === type){
+      removeRecordForDate(id, currentDay);
+      await saveData();
+      render();
+    } else {
+      upsertRecord(id, currentDay, type);
+      await saveData();
+      render();
+    }
+    return;
+  }
+  const logItem = e.target.closest('[data-jump]');
+  if(logItem){
+    currentDay = logItem.getAttribute('data-jump');
+    render();
+    return;
+  }
+});
+
+document.getElementById('list').addEventListener('change', async (e) => {
+  if(e.target.id === 'day-pick'){
+    const val = e.target.value;
+    const settings = state.settings || {};
+    const minDate = settings.start || null;
+    const maxDate = settings.end && settings.end < todayISO() ? settings.end : todayISO();
+    if(!val){ e.target.value = currentDay; return; }
+    if(val > maxDate){ e.target.value = currentDay; return; }
+    if(minDate && val < minDate){ e.target.value = currentDay; return; }
+    if(isWeekend(val)){
+      showToast('Sem aula nos fins de semana.');
+      e.target.value = currentDay;
+      return;
+    }
+    currentDay = val;
+    render();
+  }
+});
+
+document.getElementById('settings-btn').addEventListener('click', openSettingsSheet);
+
+document.getElementById('fab').addEventListener('click', openAddSubjectSheet);
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if(e.target.id === 'overlay') closeOverlay();
+});
+
+document.getElementById('list').addEventListener('click', async (e) => {
+  const reorderBtn = e.target.closest('#open-reorder');
+  if(reorderBtn){
+    openReorderSheet();
+    return;
+  }
+  const card = e.target.closest('.card');
+  if(card){
+    openDetailSheet(card.getAttribute('data-id'));
+  }
+});
+
+(async function init(){
+  currentDay = nearestWeekday(todayISO());
+  await loadData();
+  render();
+})();
+</script>
+</body>
+</html>
