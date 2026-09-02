@@ -38,17 +38,18 @@
     font-family:'Work Sans', system-ui, sans-serif;
     color:var(--ink);
     min-height:100vh;
-    padding-bottom:96px;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:calc(110px + env(safe-area-inset-bottom));
   }
   h1,h2,h3{font-family:'Zilla Slab', Georgia, serif; margin:0; color:var(--ink);}
   .wrap{max-width:480px;margin:0 auto;padding:0 18px;}
-  header{padding:28px 0 18px;}
+  header{padding:40px 0 18px;}
   header.header-top{display:flex; align-items:flex-start; justify-content:space-between;}
   header p.date{margin:0 0 4px; font-size:14px; color:var(--muted);}
   header h1{font-size:28px; font-weight:700;}
   .gear-btn{
     background:var(--card); border:1px solid var(--line); border-radius:11px; width:40px; height:40px;
-    font-size:17px; color:var(--ink-soft); cursor:pointer; flex:0 0 auto; margin-top:2px;
+    font-size:17px; color:var(--ink-soft); cursor:pointer; flex:0 0 auto; margin-top:6px;
   }
   .semester-banner{
     background:var(--warn-bg); border:1px solid var(--warn-bg); border-radius:12px; padding:12px 14px;
@@ -89,22 +90,20 @@
   .fill.danger{background:var(--danger);}
   .caption{font-size:12.5px; color:var(--muted); margin:0 0 14px;}
 
-  .actions{display:flex; gap:8px;}
   .btn{
     flex:1; border:none; border-radius:11px; padding:11px 8px; font-family:'Work Sans',sans-serif;
     font-size:14px; font-weight:600; cursor:pointer; text-align:center;
   }
-  .btn-falta{background:var(--danger-bg); color:var(--danger);}
-  .btn-presenca{background:var(--accent-bg); color:var(--accent-dark);}
   .btn:active{transform:scale(0.97);}
 
   .fab{
-    position:fixed; left:50%; transform:translateX(-50%); bottom:22px; z-index:20;
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(22px + env(safe-area-inset-bottom)); z-index:20;
     background:var(--ink); color:var(--paper); border:none; border-radius:26px;
     padding:14px 26px; font-size:15px; font-weight:600; font-family:'Work Sans',sans-serif;
     box-shadow:0 6px 18px rgba(35,50,77,0.28); cursor:pointer; max-width:440px; width:calc(100% - 36px);
   }
   .fab:active{transform:translateX(-50%) scale(0.98);}
+  .fab.hidden{display:none;}
 
   .overlay{
     position:fixed; inset:0; background:rgba(35,50,77,0.4); z-index:30;
@@ -113,7 +112,7 @@
   .overlay.hidden{display:none;}
   .sheet{
     background:var(--paper); width:100%; max-width:480px; border-radius:22px 22px 0 0;
-    padding:20px 20px 28px; max-height:85vh; overflow-y:auto;
+    padding:20px 20px calc(40px + env(safe-area-inset-bottom)); max-height:85vh; overflow-y:auto;
   }
   .sheet-handle{
     width:100%; height:26px; display:flex; align-items:center; justify-content:center;
@@ -391,6 +390,7 @@ function render(){
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.getAttribute('data-tab') === activeTab);
   });
+  document.getElementById('fab').classList.toggle('hidden', activeTab !== 'subjects');
   if(activeTab === 'day') renderDayView();
   else renderSubjectsView();
 }
@@ -434,10 +434,6 @@ function renderSubjectsView(){
       </div>
       <div class="track"><div class="fill ${st.status}" style="width:${st.pct}%"></div></div>
       <p class="caption">${st.faltasCount} de ${st.maxFaltas} faltas usadas</p>
-      <div class="actions">
-        <button class="btn btn-falta" data-action="falta" data-id="${s.id}">Faltei hoje</button>
-        <button class="btn btn-presenca" data-action="presenca" data-id="${s.id}">Estive presente</button>
-      </div>
     </article>`;
   }).join('');
 }
@@ -1019,18 +1015,6 @@ document.getElementById('list').addEventListener('click', async (e) => {
   const reorderBtn = e.target.closest('#open-reorder');
   if(reorderBtn){
     openReorderSheet();
-    return;
-  }
-  const actionBtn = e.target.closest('[data-action]');
-  if(actionBtn){
-    const id = actionBtn.getAttribute('data-id');
-    const action = actionBtn.getAttribute('data-action');
-    const date = todayISO();
-    upsertRecord(id, date, action);
-    await saveData();
-    render();
-    const s = state.subjects.find(x => x.id === id);
-    showToast(`${action === 'falta' ? 'Falta' : 'Presença'} registrada hoje em ${s.name}.`);
     return;
   }
   const card = e.target.closest('.card');
